@@ -13,14 +13,13 @@ export class MapComponent implements OnInit {
     layers: [
       L.tileLayer('https://tile-{s}.openstreetmap.fr/hot/{z}/{x}/{y}.png')
     ],
-    zoom: 1,
-    center: L.latLng(30.262295, -97.746573)
+    zoom: 4,
+    center: L.latLng(39.8283459,-98.5794797) //geographic center of the US
   };
 
   constructor() { }
 
   onMapReady(map) {
-
     this.map = map;
   }
 
