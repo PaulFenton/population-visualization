@@ -14,7 +14,7 @@ export class MapComponent implements OnInit {
       L.tileLayer('https://tile-{s}.openstreetmap.fr/hot/{z}/{x}/{y}.png')
     ],
     zoom: 1,
-    center: L.latLng(51.7520, 1.2577)
+    center: L.latLng(30.262295, -97.746573)
   };
 
   constructor() { }
