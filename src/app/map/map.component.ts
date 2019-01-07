@@ -94,7 +94,7 @@ export class MapComponent {
     const style = (feature) => {
       return {
         ...styles.state_unselected,
-        fillColor: thisptr.getStateColor(feature.properties.population),
+        fillColor: thisptr.getStateColor(feature.properties.population, feature.properties.name),
       };
     };
 
@@ -146,7 +146,6 @@ export class MapComponent {
 
 
     if(countyJson != null){
-      console.log("initializing with county: ", countyJson);
       this.countyFeatures = L.geoJSON(countyJson, {
         style: style,
         onEachFeature: onEachFeature 
@@ -155,27 +154,38 @@ export class MapComponent {
 
   };
 
-
-  getStateColor(metric) {
-    return metric > 30000000 ? '#800026' :
-    metric > 20000000  ? '#BD0026' :
-    metric > 10000000  ? '#E31A1C' :
-    metric > 5000000  ? '#FC4E2A' :
-    metric > 2000000   ? '#FD8D3C' :
-    metric > 1000000   ? '#FEB24C' :
-    metric > 500000   ? '#FED976' :
-               '#FFEDA0';
-  }
-
   getCountyColor(metric) {
-    return metric > 3000000 ? '#800026' :
-    metric > 2000000  ? '#BD0026' :
-    metric > 1000000  ? '#E31A1C' :
-    metric > 500000  ? '#FC4E2A' :
-    metric > 200000   ? '#FD8D3C' :
-    metric > 100000   ? '#FEB24C' :
-    metric > 50000   ? '#FED976' :
-               '#FFEDA0';
+    return this.getColor(3e6, metric);
   }
 
+  getStateColor(metric, name) {
+    return this.getColor(3.5e7, metric);
+  }
+
+  getColor(valueMax, value){
+
+    let colors = ['#ffffb2','#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c','#b10026'];
+    let indexMax = 6;
+    let index = this.getColorMapIndex(indexMax, valueMax, value);
+
+    return colors[index];
+  }
+
+  getColorMapIndex(indexMax, valueMax, value) {
+
+    if((indexMax <= 0) || (valueMax <= 0.0)){
+      return 0;
+    } else {
+
+      let normalizedValue = (value / valueMax);
+
+      let index = Math.round(normalizedValue*indexMax);
+
+      if(index > indexMax){
+        return indexMax;
+      } else {
+        return index;
+      }
+    }
+  }
 }
