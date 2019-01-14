@@ -1,4 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -15,18 +16,26 @@ import { HttpClientModule } from '@angular/common/http';
 import { MapComponent } from './map/map.component';
 import { DataService } from './data.service';
 
+//material UI components
+import { MatExpansionModule } from '@angular/material';
+import { StateLabelComponent } from './map/state-label/state-label.component';
+
 
 @NgModule({
   declarations: [
     AppComponent,
-    MapComponent
+    MapComponent,
+    StateLabelComponent
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     AppRoutingModule,
     LeafletModule.forRoot(),
-    HttpClientModule
+    HttpClientModule,
+    MatExpansionModule
   ],
+  entryComponents: [MapComponent, StateLabelComponent],
   providers: [DataService],
   bootstrap: [AppComponent]
 })

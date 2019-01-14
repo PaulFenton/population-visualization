@@ -1,5 +1,22 @@
 <div id="map-wrapper">
-  <div style="height: 600px; width: 100%"
+  <div id="info-overlay">
+      <mat-expansion-panel (click)="legendToggle()"
+                            [expanded]="this.isLegendExpanded"
+                            [disabled]="!this.isLegendExpanded"
+                            >
+      <mat-expansion-panel-header>
+      <mat-panel-title>
+      <div *ngIf="this.isStateSelected">{{this.selectedStateName}}</div>
+      <div *ngIf="!this.isStateSelected">State</div>
+      </mat-panel-title>
+      <mat-panel-description>
+      {{this.highlightedStateName}}
+      </mat-panel-description>
+      </mat-expansion-panel-header>
+      <p>I'm visible because I am open</p>
+      </mat-expansion-panel>
+    </div>
+  <div id="leaflet"
   leaflet 
   [leafletOptions]="options"
   (leafletMapReady)="onMapReady($event)">
