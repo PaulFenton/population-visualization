@@ -24,3 +24,22 @@
     border-radius: 5px;
     z-index: 10;
 }
+
+#expansion-selected-text {
+    color: black;
+    font: 16px;
+}
+#expansion-unselected-text {
+    color: grey;
+    font: 14px;
+}
+
+.custom-header .mat-expansion-panel-header-title, 
+.custom-header .mat-expansion-panel-header-description {
+  flex-basis: 0;
+}
+
+.custom-header .mat-expansion-panel-header-description {
+  justify-content: space-between;
+  align-items: center;
+}

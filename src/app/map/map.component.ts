@@ -6,6 +6,7 @@ import { MatChipsModule } from '@angular/material';
 import { StateLabelComponent } from './state-label/state-label.component';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { GeoJsonObject, Feature } from 'geojson';
+import { ColorService } from '../color.service';
 
 export const emptyFeature:Feature = {
   type: "Feature",
@@ -31,7 +32,7 @@ export const USA = {
 export class MapComponent {
 
   map;
-  isLegendExpanded:boolean = false;
+  isLegendExpanded:Boolean = false;
   stateJson;
   stateFeatures;
   
@@ -44,12 +45,10 @@ export class MapComponent {
 
   // information about selected state
   selectedStateTarget;
-  //selectedStateFeature;
-  //$highlightedStateName:BehaviorSubject<string> = new BehaviorSubject<string>("none");
   public selectedStateName:string = "none";
   $selectedStateFeature:BehaviorSubject<Feature> = new BehaviorSubject<Feature>(emptyFeature);
-  selectedCountyName;
-  selectedCountyFeature;
+  //selectedCountyName;
+  //selectedCountyFeature;
 
 
   countyJson;
@@ -71,14 +70,14 @@ export class MapComponent {
       dasharray: (feature.properties.highlighted == true) ? '5' : '2.5',
       color: (feature.properties.highlighted == true) ? 'black' : 'white',
       fillOpacity: (feature.properties.selected == true) ? 0.0 : 0.8,
-      fillColor: this.getStateColor(feature.properties.population,
+      fillColor: this.colorService.getStateColor(feature.properties.population,
                                     feature.properties.name,
                                     feature.properties.focused),
     };
   };
 
   
-  constructor(private dataService: DataService, private cdr: ChangeDetectorRef) {
+  constructor(private dataService: DataService, private cdr: ChangeDetectorRef, private colorService: ColorService) {
   }
 
   ngOnInit(){
@@ -87,10 +86,7 @@ export class MapComponent {
 
   legendToggle(){
     //if a state is currently selected, unselect it
-    console.log("featurestate: ", this.$selectedStateFeature.value);
-    console.log("iftest", this.$selectedStateFeature.value.properties.name);
     if(this.$selectedStateFeature.value.properties.name != "none"){
-      console.log("closing legend");
       this.isLegendExpanded = false;
       this.$selectedStateFeature.next(emptyFeature);
     }
@@ -101,17 +97,18 @@ export class MapComponent {
     //create the map
     this.map = map;
 
-    //get the data and initialize map
-    this.dataService.getStateData().subscribe(joined => {
-      this.onDataLoaded(joined);
+    //get the data and initialize the map
+    this.dataService.getStateData().subscribe(res => {
+      this.onDataLoaded(res);
     });
   };
 
   onDataLoaded(data){
-    this.initializeStates(data);
+    this.initializeStateFeatures(data);
 
+
+    // respond to updates from the leaflet map
     this.$selectedStateFeature.subscribe(feature => {
-
       if(feature.properties.name == "none") {
 
         // unselected
@@ -137,17 +134,18 @@ export class MapComponent {
         this.stateFeatures.eachLayer(layer => {
           if(feature.id == layer.feature.id){
             layer.feature.properties.selected = true;
+          }else{
+            layer.feature.properties.selected = false;
           }
+          
           layer.feature.properties.focused = false;
         });
         this.stateFeatures.setStyle(this.style);
 
       }
-
-      //this.selectedStateName = feature.properties.name;
-      //this.highlightedStateName = e.feature.properties.name;
-      //this.cdr.detectChanges();
+      this.cdr.detectChanges();
     });
+
     this.$highlightedStateFeature.subscribe(e => {
       this.highlightedStateName = e.properties.name;
       this.cdr.detectChanges();
@@ -171,25 +169,24 @@ export class MapComponent {
   }
 
 
-  initializeStates(stateJson) {
-    let thisptr = this; // use thisptr hack to share component functions and variables among leaflet callbacks
+  initializeStateFeatures(stateJson) {
+    //let thisptr = this; // use thisptr hack to share component functions and variables among leaflet callbacks
     this.stateJson = stateJson;
-    //var info = L.control();
+
     stateJson = stateJson.map(el => {
       return {...el, properties: {...el.properties, focused: true, highlighted: false, selected: false}};
     });
 
     const highlightFeature = (e) => {
-      e.target.feature.properties['highlighted'] = true;
+      e.target.feature.properties.highlighted = true;
       if(this.highlightedStateFeature){
         this.highlightedStateFeature.properties.highlighted = false;
       }
       this.highlightedStateFeature = e.target.feature;
-      //this.highlightedStateFeature.properties.highlighted = true;
+
       // update the component state observables
       this.$highlightedStateFeature.next(this.highlightedStateFeature);
 
-      //e.target.setStyle(styles.state_no_selection);
       if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
         e.target.bringToFront();
       }
@@ -198,22 +195,19 @@ export class MapComponent {
 
     };
 
-
-
     const selectState = (e) => {
-      //this.isStateSelected = true;
       this.map.fitBounds(e.target.getBounds());
       this.$selectedStateFeature.next(e.target.feature);
     };
 
     const onEachFeature = (feature, layer) => {
-      //let popupContent = feature.properties.name;
+
       layer.on({
         mouseover: highlightFeature,
         //mouseout: resetHighlight,
         click: selectState
       });
-      //layer.bindPopup(popupContent);
+
     }
 
 
@@ -247,14 +241,14 @@ export class MapComponent {
     const style = (feature) => {
       return {
         ...styles.state_unselected,
-        fillColor: thisptr.getCountyColor(feature.properties.population),
+        fillColor: thisptr.colorService.getCountyColor(feature.properties.population),
       };
     };
 
     const selectState = (e) => {
       //set all state styles to unselected
       thisptr.stateFeatures.setStyle(styles.state_unselected);
-      thisptr.selectedStateFeature = e.target;
+      //thisptr.selectedStateFeature = e.target;
       e.target.setStyle(styles.state_selected);
       thisptr.map.fitBounds(e.target.getBounds())
       thisptr.removeCounties();
@@ -273,43 +267,4 @@ export class MapComponent {
 
   };
 
-  getCountyColor(metric) {
-    return this.getColor(3e6, metric);
-  }
-
-  getStateColor(metric, name, focused) {
-    if(focused){
-      return this.getColor(3.5e7, metric);
-    } else {
-      return '#666666';
-    }
-      
-  }
-
-  getColor(valueMax, value){
-
-    let colors = ['#ffffb2','#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c','#b10026'];
-    let indexMax = 6;
-    let index = this.getColorMapIndex(indexMax, valueMax, value);
-
-    return colors[index];
-  }
-
-  getColorMapIndex(indexMax, valueMax, value) {
-
-    if((indexMax <= 0) || (valueMax <= 0.0)){
-      return 0;
-    } else {
-
-      let normalizedValue = (value / valueMax);
-
-      let index = Math.round(normalizedValue*indexMax);
-
-      if(index > indexMax){
-        return indexMax;
-      } else {
-        return index;
-      }
-    }
-  }
 }

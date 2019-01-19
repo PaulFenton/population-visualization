@@ -3,14 +3,15 @@
       <mat-expansion-panel (click)="legendToggle()"
                             [expanded]="this.isLegendExpanded"
                             [disabled]="!this.isLegendExpanded"
-                            >
+                            hideToggle="true" #example>
       <mat-expansion-panel-header>
       <mat-panel-title>
-      <div *ngIf="this.isStateSelected">{{this.selectedStateName}}</div>
-      <div *ngIf="!this.isStateSelected">State</div>
+          <div *ngIf="!this.isLegendExpanded"><div id="expansion-unselected-text">{{this.selectedStateName}}</div></div>
+          <div *ngIf="this.isLegendExpanded"><div id="expansion-selected-text">{{this.selectedStateName}}</div></div>
       </mat-panel-title>
       <mat-panel-description>
-      {{this.highlightedStateName}}
+          <div *ngIf="!example.expanded"><mat-icon>home</mat-icon></div>
+          <div *ngIf="example.expanded"><mat-icon>home</mat-icon></div>
       </mat-panel-description>
       </mat-expansion-panel-header>
       <p>I'm visible because I am open</p>

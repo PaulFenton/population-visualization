@@ -17,7 +17,7 @@ import { MapComponent } from './map/map.component';
 import { DataService } from './data.service';
 
 //material UI components
-import { MatExpansionModule } from '@angular/material';
+import { MatExpansionModule, MatIconModule } from '@angular/material';
 import { StateLabelComponent } from './map/state-label/state-label.component';
 
 
@@ -33,7 +33,8 @@ import { StateLabelComponent } from './map/state-label/state-label.component';
     AppRoutingModule,
     LeafletModule.forRoot(),
     HttpClientModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatIconModule
   ],
   entryComponents: [MapComponent, StateLabelComponent],
   providers: [DataService],
